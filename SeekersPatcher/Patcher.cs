@@ -87,6 +87,12 @@ namespace _SeekersPatcher
             AddField(tdPickupOption, tdPickupIndex, "pickupIndex", FieldAttributes.Public);
 
 
+            var tdShopTerminal = ror2.GetType(RoR2, nameof(ShopTerminalBehavior));
+            AddField(tdShopTerminal, tdPickupIndex, "pickupIndex", FieldAttributes.Public);
+
+            var tdGenericPickupOption = ror2.GetType(RoR2, nameof(GenericPickupController));
+            AddField(tdGenericPickupOption, tdPickupIndex, "pickupIndex", FieldAttributes.Public);
+
 
             var tdCharacterModel = ror2.GetType(RoR2, nameof(CharacterModel));
             var refInt = ror2.ImportReference(typeof(int));
