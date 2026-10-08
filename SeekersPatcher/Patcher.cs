@@ -99,6 +99,9 @@ namespace _SeekersPatcher
             var refInt = ror2.ImportReference(typeof(int));
             AddField(tdCharacterModel, refInt, "invisibilityCount", FieldAttributes.Public);
             
+            
+            var tdAimAnimator = ror2.GetType(RoR2, nameof(AimAnimator));
+            AddField(tdAimAnimator, refBool, "UseTransformedAimVector", FieldAttributes.Public);
 
 
             void AddField(TypeDefinition typeDef, TypeReference fieldTypeRef, string fieldName, FieldAttributes attr)
