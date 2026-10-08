@@ -13,7 +13,7 @@
     </ItemGroup>
   
     <ItemGroup>
-    <PackageReference Include="RiskOfRain2.GameLibs" Version="1.3.9-r.0" />
+    <PackageReference Include="RiskOfRain2.GameLibs" Version="1.4.1-r.0" />
       <PackageReference Include="BepInEx.Analyzers" Version="1.0.*">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

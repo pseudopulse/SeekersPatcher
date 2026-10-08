@@ -73,6 +73,7 @@ namespace _SeekersPatcher
 
             var tdPCMC = ror2.GetType(RoR2, nameof(PlayerCharacterMasterController));
             AddField(tdPCMC, refBool, "wasClaimed", FieldAttributes.Public);
+            AddField(tdPCMC, refBool, "jumpWasClaimed", FieldAttributes.Public);
 
 
 

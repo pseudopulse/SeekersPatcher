@@ -37,13 +37,6 @@ namespace SeekersPatcherDLL
             // set logger
             ModLogger = Logger;
 
-            oldStacksField = typeof(Inventory).GetFields().FirstOrDefault(f => f.Name is "itemStacks" && f.FieldType == typeof(int[]));
-
-            Hook wasClaimedHook = new Hook(
-                AccessTools.Method(typeof(PlayerCharacterMasterController), nameof(PlayerCharacterMasterController.Update)),
-                JumpClaimed
-            );
-
             ILHook getInvisHook = new ILHook(
                 AccessTools.PropertyGetter(typeof(CharacterModel), nameof(CharacterModel.invisibilityCount)),
                 InvisibilityGet
@@ -54,17 +47,26 @@ namespace SeekersPatcherDLL
                 InvisibilitySet
             );
 
-            Hook inventoryAcquire = new Hook(
-                AccessTools.Method(typeof(Inventory), nameof(Inventory.AcquirePooledResources)),
-                AcquirePools
-            );
+            oldStacksField = typeof(Inventory).GetFields().FirstOrDefault(f => f.Name is "itemStacks" && f.FieldType == typeof(int[]));
+            if (oldStacksField is not null)
+            {
+                Inventory.onInventoryChangedGlobal += Inventory_onInventoryChangedGlobal;
 
-            Hook inventoryRelease = new Hook(
-                AccessTools.Method(typeof(Inventory), nameof(Inventory.ReleasePooledResources)),
-                ReleasePools
-            );
 
-            Inventory.onInventoryChangedGlobal += Inventory_onInventoryChangedGlobal;
+                Hook inventoryAcquire = new Hook(
+                    AccessTools.Method(typeof(Inventory), nameof(Inventory.AcquirePooledResources)),
+                    AcquirePools
+                );
+
+                Hook inventoryRelease = new Hook(
+                    AccessTools.Method(typeof(Inventory), nameof(Inventory.ReleasePooledResources)),
+                    ReleasePools
+                );
+            }
+            else
+            {
+                ModLogger.LogError("Failed to find Inventory.itemStacks field");
+            }
 
             typeof(DLC2Content.Items).GetField("NegateAttack").SetValue(null, Addressables.LoadAssetAsync<ItemDef>(RoR2_DLC2_Items_SpeedBoostPickup.SpeedBoostPickup_asset).WaitForCompletion());
             typeof(DLC2Content.Items).GetField("GoldOnStageStart").SetValue(null, Addressables.LoadAssetAsync<ItemDef>(RoR2_DLC2_Items_BarrageOnBoss.BarrageOnBoss_asset).WaitForCompletion());
@@ -75,30 +77,23 @@ namespace SeekersPatcherDLL
 
         private static void Inventory_onInventoryChangedGlobal(Inventory inventory)
         {
-            if (oldStacksField?.GetValue(inventory) is int[] stacks)
-                inventory.WriteAllPermanentItemStacks(stacks);
+            if (oldStacksField.GetValue(inventory) is int[] stacks)
+                inventory.WriteItemStacks(stacks);
         }
 
         private static void AcquirePools(Action<Inventory> orig, Inventory self)
         {
             orig(self);
 
-            oldStacksField?.SetValue(self, ItemCatalog.PerItemBufferPool.Request<int>());
+            oldStacksField.SetValue(self, ItemCatalog.PerItemBufferPool.Request<int>());
         }
 
         private static void ReleasePools(Action<Inventory> orig, Inventory self)
         {
             orig(self);
 
-            if (oldStacksField?.GetValue(self) is int[] stacks)
+            if (oldStacksField.GetValue(self) is int[] stacks)
                 ItemCatalog.PerItemBufferPool.Return(ref stacks);
-        }
-
-        private static void JumpClaimed(Action<PlayerCharacterMasterController> orig, PlayerCharacterMasterController self)
-        {
-            orig(self);
-
-            AccessTools.Field(typeof(PlayerCharacterMasterController), "wasClaimed").SetValue(self, self.jumpWasClaimed);
         }
 
         private static void InvisibilityGet(ILContext il)
